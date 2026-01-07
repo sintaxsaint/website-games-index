@@ -4,3 +4,5 @@ when integrating any game/app add it to the games list in the index.html file al
 when integrating any game/app update the call.html script to support it
 the id is always a string of numbers the first game will be the number 1 the second game the number 2 and so on
 this website will be run on github pages
+dont put the rules of the project anywhere in the website or repo like the readme file
+please remember to say that i am a solo dev so updates take time
