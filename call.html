@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Loader</title>
+</head>
+<body>
+    <script>
+        // Get the game ID from the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('id');
+
+        // Map of game IDs to their index.html paths
+        // When integrating a new game, add it to this list
+        const games = {
+            "1": "games/test-game/index.html"
+        };
+
+        if (gameId && games[gameId]) {
+            // Redirect to the game
+            window.location.href = games[gameId];
+        } else {
+            // Handle error
+            document.body.innerHTML = "<h1>Error: Game not found or ID missing.</h1>";
+            console.error("Game ID not found:", gameId);
+        }
+    </script>
+</body>
+</html>

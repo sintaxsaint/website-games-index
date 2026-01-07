@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request a Game</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input, textarea { width: 100%; padding: 0.5rem; font-size: 1rem; }
+        button { background-color: #2ea44f; color: white; border: none; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; border-radius: 6px; }
+        button:hover { background-color: #2c974b; }
+        .note { background-color: #f6f8fa; padding: 1rem; border-radius: 6px; margin-bottom: 2rem; border: 1px solid #d0d7de; }
+    </style>
+</head>
+<body>
+    <h1>Request a Game</h1>
+    
+    <div class="note">
+        <p><strong>Note:</strong> Submitting this form will open a GitHub Issue in our repository. You will need a GitHub account to finalize the request.</p>
+    </div>
+
+    <form id="requestForm">
+        <div class="form-group">
+            <label for="gameName">Game Name:</label>
+            <input type="text" id="gameName" required placeholder="e.g. Super Fun Game">
+        </div>
+        
+        <div class="form-group">
+            <label for="gameSource">Link to Game / Description:</label>
+            <textarea id="gameSource" rows="4" required placeholder="Where can we find this game?"></textarea>
+        </div>
+
+        <button type="submit">Submit Request</button>
+    </form>
+
+    <p><a href="index.html">← Back to Games</a></p>
+
+    <script>
+        // CONFIGURATION: UPDATE THESE VALUES
+        const GITHUB_USERNAME = "sintaxsaint"; // Replace with your GitHub username
+        const REPO_NAME = "website-games-index";      // Replace with your repository name
+
+        document.getElementById('requestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('gameName').value;
+            const source = document.getElementById('gameSource').value;
+            
+            const title = encodeURIComponent(`Game Request: ${name}`);
+            const body = encodeURIComponent(`**Game Name:** ${name}\n\n**Source/Description:**\n${source}`);
+            
+            // Construct the GitHub Issue URL
+            // If the user hasn't configured the repo, we'll try to guess or fallback
+            let user = GITHUB_USERNAME;
+            let repo = REPO_NAME;
+
+            if (user === "YOUR_USERNAME") {
+                alert("Please configure the GITHUB_USERNAME in request.html");
+                return;
+            }
+
+            const url = `https://github.com/${user}/${repo}/issues/new?title=${title}&body=${body}`;
+            
+            // Open in new tab
+            window.open(url, '_blank');
+        });
+    </script>
+</body>
+</html>
