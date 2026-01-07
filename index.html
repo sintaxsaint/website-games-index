@@ -4,22 +4,286 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Games Index</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --card-hover: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--card-bg);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid var(--card-bg);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #search-input:focus {
+            border-color: var(--accent);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            list-style: none;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            background-color: var(--card-hover);
+            border-color: var(--accent);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .game-link {
+            display: block;
+            padding: 25px;
+            text-decoration: none;
+            color: var(--text-primary);
+            height: 100%;
+        }
+
+        .game-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .game-id {
+            font-size: 1rem;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--accent);
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-top: 40px;
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Available Games</h1>
-    <p><a href="request.html">Request a new game</a></p>
-    <ul>
-        <!-- List of games -->
-        <li><a href="call.html?id=1">Test Game</a> : ID to call: 1</li>
-        <li><a href="call.html?id=2">1v1.LOL</a> : ID to call: 2</li>
-        <li><a href="call.html?id=3">Bloxorz</a> : ID to call: 3</li>
-        <li><a href="call.html?id=4">Capybara Clicker</a> : ID to call: 4</li>
-        <li><a href="call.html?id=5">Krunker.io</a> : ID to call: 5</li>
-        <li><a href="call.html?id=6">Run 3</a> : ID to call: 6</li>
-        <li><a href="call.html?id=7">Sugar Sugar</a> : ID to call: 7</li>
-        <li><a href="call.html?id=8">Time Shooter 3</a> : ID to call: 8</li>
-        <li><a href="call.html?id=9">World's Hardest Game</a> : ID to call: 9</li>
-        <li><a href="call.html?id=10">Slope</a> : ID to call: 10</li>
-    </ul>
+    <div class="container">
+        <header>
+            <h1>Games Index</h1>
+            <div class="header-actions">
+                <a href="request.html" class="btn">Request New Game</a>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search games...">
+        </div>
+
+        <ul class="games-grid" id="games-list">
+            <!-- Games list -->
+            <li class="game-card">
+                <a href="call.html?id=1" class="game-link">
+                    <span class="game-title">Test Game</span>
+                    <span class="game-id">ID: 1</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=2" class="game-link">
+                    <span class="game-title">1v1.LOL</span>
+                    <span class="game-id">ID: 2</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=3" class="game-link">
+                    <span class="game-title">Bloxorz</span>
+                    <span class="game-id">ID: 3</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=4" class="game-link">
+                    <span class="game-title">Capybara Clicker</span>
+                    <span class="game-id">ID: 4</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=5" class="game-link">
+                    <span class="game-title">Krunker.io</span>
+                    <span class="game-id">ID: 5</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=6" class="game-link">
+                    <span class="game-title">Run 3</span>
+                    <span class="game-id">ID: 6</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=7" class="game-link">
+                    <span class="game-title">Sugar Sugar</span>
+                    <span class="game-id">ID: 7</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=8" class="game-link">
+                    <span class="game-title">Time Shooter 3</span>
+                    <span class="game-id">ID: 8</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=9" class="game-link">
+                    <span class="game-title">World's Hardest Game</span>
+                    <span class="game-id">ID: 9</span>
+                </a>
+            </li>
+            <li class="game-card">
+                <a href="call.html?id=10" class="game-link">
+                    <span class="game-title">Slope</span>
+                    <span class="game-id">ID: 10</span>
+                </a>
+            </li>
+            <li class="no-results">No games found matching your search.</li>
+        </ul>
+        
+        <div class="solo-dev-notice">
+            <p>Maintained by a solo developer (sintaxsaint) helped by some A.I. so updates take time.</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple search functionality
+        const searchInput = document.getElementById('search-input');
+        const gamesList = document.getElementById('games-list');
+        const games = gamesList.getElementsByClassName('game-card');
+        const noResults = gamesList.querySelector('.no-results');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+            let hasVisibleGames = false;
+
+            Array.from(games).forEach(game => {
+                const title = game.querySelector('.game-title').textContent.toLowerCase();
+                const id = game.querySelector('.game-id').textContent.toLowerCase();
+                
+                if (title.includes(filter) || id.includes(filter)) {
+                    game.style.display = "";
+                    hasVisibleGames = true;
+                } else {
+                    game.style.display = "none";
+                }
+            });
+
+            noResults.style.display = hasVisibleGames ? "none" : "block";
+        });
+    </script>
 </body>
 </html>

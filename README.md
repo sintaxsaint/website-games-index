@@ -3,7 +3,7 @@
 This project hosts a collection of games accessible via a central loader. It is hosted on GitHub Pages.
 
 ## About
-This project is maintained by a single developer (**sintaxsaint**). Please be aware that updates and new game additions may take some time.
+This project is maintained by a single developer (**sintaxsaint**) helped by some A.I. so updates and new game additions may take some time.
 
 ## How to Play
 

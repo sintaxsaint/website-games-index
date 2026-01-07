@@ -2,4 +2,4 @@ if the game has a back button that would make the page go back to the main index
     <div class='webgl-content wrap'>
         <div id='gameContainer' style='width:100%;height:100%;margin:0;'></div>
 could break another persons website so we remove it
-always change the title of the game to be the name of the game and not include a website name in the title e.g <title>Quizcool — Slope</title> becomes <title>Slope</title>
+always change the title of the game to be the name of the game and not include a website name in the title e.g <title>Quizcool — Slope</title> becomes <title>Slope</title> also 
