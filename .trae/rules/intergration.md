@@ -8,3 +8,4 @@ dont put the rules of the project anywhere in the website or repo like the readm
 please remember to say that i am a solo dev helped by some A.I. so updates take time
 DO ALL OF THE GAMES/APPS IN THE TO INTERGRATE FOLDER WHEN INTERGRATING THEM
 never delate the to intergrate folder
+when integrating any game/app first clean it up according to the game-clean-up.md file
