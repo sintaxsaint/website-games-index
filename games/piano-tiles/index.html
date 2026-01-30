@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Tiles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        canvas {
+            background: #1a1a1a;
+            border: 3px solid #fff;
+        }
+        
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <p>Click on tiles to destroy them</p>
+        <p>Don't let them reach the bottom!</p>
+    </div>
+    <canvas id="gameCanvas" width="300" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let score = 0;
+        let gameOver = false;
+        let tiles = [];
+        let tileCounter = 0;
+        
+        const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44'];
+        
+        class Tile {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = canvas.width / 4;
+                this.height = 60;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.speed = 3 + Math.floor(score / 500) * 0.5;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+            }
+            
+            update() {
+                this.y += this.speed;
+            }
+            
+            clicked() {
+                return false; // Will be checked separately
+            }
+        }
+        
+        const createTile = () => {
+            const x = Math.floor(Math.random() * 4) * (canvas.width / 4);
+            tiles.push(new Tile(x, -60));
+        };
+        
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            for (let i = tiles.length - 1; i >= 0; i--) {
+                const tile = tiles[i];
+                if (clickX >= tile.x && clickX <= tile.x + tile.width &&
+                    clickY >= tile.y && clickY <= tile.y + tile.height) {
+                    tiles.splice(i, 1);
+                    score += 10;
+                    break;
+                }
+            }
+        });
+        
+        const resetGame = () => {
+            score = 0;
+            gameOver = false;
+            tiles = [];
+            tileCounter = 0;
+        };
+        
+        const gameLoop = () => {
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            for (let i = 1; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo((canvas.width / 4) * i, 0);
+                ctx.lineTo((canvas.width / 4) * i, canvas.height);
+                ctx.stroke();
+            }
+            
+            if (!gameOver) {
+                tileCounter++;
+                if (tileCounter > 40) {
+                    createTile();
+                    tileCounter = 0;
+                }
+                
+                for (let i = tiles.length - 1; i >= 0; i--) {
+                    tiles[i].update();
+                    tiles[i].draw();
+                    
+                    if (tiles[i].y > canvas.height) {
+                        gameOver = true;
+                    }
+                }
+            }
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('Score: ' + score, 10, 30);
+            
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 30);
+                ctx.font = 'bold 18px Arial';
+                ctx.fillText('Final Score: ' + score, canvas.width / 2, canvas.height / 2 + 20);
+                ctx.fillText('Click to restart', canvas.width / 2, canvas.height / 2 + 60);
+            }
+            
+            requestAnimationFrame(gameLoop);
+        };
+        
+        canvas.addEventListener('click', () => {
+            if (gameOver) resetGame();
+        });
+        
+        gameLoop();
+    </script>
+</body>
+</html>

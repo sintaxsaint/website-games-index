@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agar.io</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        canvas {
+            border: 3px solid #4CAF50;
+        }
+        
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        .stats {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <p>Move mouse to navigate</p>
+        <p>Eat pellets and smaller cells</p>
+    </div>
+    <div class="stats">
+        <p>Size: <span id="size">1</span></p>
+        <p>Score: <span id="score">0</span></p>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        
+        document.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+        
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 20,
+            speed: 5,
+            cells: [],
+            
+            draw() {
+                ctx.fillStyle = '#4CAF50';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#2d7d2d';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            },
+            
+            update() {
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 5) {
+                    this.x += (dx / distance) * this.speed;
+                    this.y += (dy / distance) * this.speed;
+                }
+                
+                // Keep in bounds
+                this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+            }
+        };
+        
+        let pellets = [];
+        let enemies = [];
+        let score = 0;
+        
+        const createPellets = () => {
+            for (let i = 0; i < 50; i++) {
+                pellets.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 3,
+                    color: '#FFD700'
+                });
+            }
+        };
+        
+        const createEnemies = () => {
+            for (let i = 0; i < 5; i++) {
+                enemies.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 15 + Math.random() * 10,
+                    speed: 2 + Math.random() * 1,
+                    color: '#ff6b6b'
+                });
+            }
+        };
+        
+        const drawPellets = () => {
+            for (let pellet of pellets) {
+                ctx.fillStyle = pellet.color;
+                ctx.beginPath();
+                ctx.arc(pellet.x, pellet.y, pellet.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        };
+        
+        const drawEnemies = () => {
+            for (let enemy of enemies) {
+                ctx.fillStyle = enemy.color;
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#cc0000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        };
+        
+        const checkCollisions = () => {
+            // Check pellet collisions
+            for (let i = pellets.length - 1; i >= 0; i--) {
+                const dx = player.x - pellets[i].x;
+                const dy = player.y - pellets[i].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < player.radius) {
+                    pellets.splice(i, 1);
+                    player.radius += 0.5;
+                    score += 1;
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('size').textContent = Math.floor(player.radius / 20 * 100);
+                }
+            }
+            
+            // Spawn new pellets if needed
+            if (pellets.length < 50) {
+                pellets.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 3,
+                    color: '#FFD700'
+                });
+            }
+            
+            // Check enemy collisions
+            for (let enemy of enemies) {
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < player.radius + enemy.radius) {
+                    if (player.radius > enemy.radius) {
+                        player.radius += 1;
+                        score += 50;
+                        document.getElementById('score').textContent = score;
+                        enemies.splice(enemies.indexOf(enemy), 1);
+                    }
+                }
+            }
+        };
+        
+        const updateEnemies = () => {
+            for (let enemy of enemies) {
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 200) {
+                    enemy.x += (dx / distance) * enemy.speed;
+                    enemy.y += (dy / distance) * enemy.speed;
+                }
+            }
+        };
+        
+        const gameLoop = () => {
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            player.update();
+            updateEnemies();
+            checkCollisions();
+            
+            drawPellets();
+            drawEnemies();
+            player.draw();
+            
+            requestAnimationFrame(gameLoop);
+        };
+        
+        createPellets();
+        createEnemies();
+        gameLoop();
+    </script>
+</body>
+</html>
