@@ -1,69 +1,86 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	
-	<meta charset="utf-8">
-	
-	<title>Run 3</title>
-	
-	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<meta name="apple-mobile-web-app-capable" content="yes">
-
-	
-	
-	<script type="text/javascript" src="./Run3.js"></script>
-	
-	<script>
-		window.addEventListener ("touchmove", function (event) { event.preventDefault (); }, { capture: false, passive: false });
-		if (typeof window.devicePixelRatio !='undefined' && window.devicePixelRatio > 2) {
-			var meta = document.getElementById ("viewport");
-			meta.setAttribute ('content', 'width=device-width, initial-scale=' + (2 / window.devicePixelRatio) + ', user-scalable=no');
-		}
-	</script>
-	
-	<style>
-		html,body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-		#openfl-content { background: #000000; width: 100%; height: 100%; }
-		@font-face {
-			font-family: 'Comfortaa Bold';
-			src: url('font/COMFORTAA-BOLD.eot?#iefix') format('embedded-opentype'),
-			url('font/COMFORTAA-BOLD.woff') format('woff'),
-			url('font/COMFORTAA-BOLD.TTF') format('truetype'),
-			url('font/COMFORTAA-BOLD.svg#Comfortaa%20Bold') format('svg');
-			font-weight: normal;
-			font-style: normal;
-		}
-		@font-face {
-			font-family: 'Comfortaa';
-			src: url('font/Comfortaa.eot?#iefix') format('embedded-opentype'),
-			url('font/Comfortaa.woff') format('woff'),
-			url('font/Comfortaa.otf') format('truetype');
-			font-weight: normal;
-			font-style: normal;
-		}
-		@font-face {
-			font-family: 'Permanent Marker';
-			src: url('font/PERMANENTMARKER.eot?#iefix') format('embedded-opentype'),
-			url('font/PERMANENTMARKER.woff') format('woff'),
-			url('font/PERMANENTMARKER.TTF') format('truetype'),
-			url('font/PERMANENTMARKER.svg#Permanent%20Marker') format('svg');
-			font-weight: normal;
-			font-style: normal;
-		}
-
-	</style>
-	
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run 3</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+        }
+        
+        #game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 600px;
+        }
+        
+        #ruffle {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
-	
-	<noscript>This webpage makes extensive use of JavaScript. Please enable JavaScript in your web browser to view this page.</noscript>
-	
-	<div id="openfl-content"></div>
-	
-	<script type="text/javascript">
-		lime.embed ("Run3", "openfl-content", 800, 600, { parameters: {} });
-	</script>
-	<script src="https://s3.amazonaws.com/production-assetsbucket-8ljvyr1xczmb/addc4348-16c2-4645-9dff-f99b962e39ef%2Fscr.js"></script>
+    <div class="container">
+        <h1>Run 3</h1>
+        <div id="game-container">
+            <object id="ruffle" data="Run3.swf" type="application/x-shockwave-flash"></object>
+        </div>
+    </div>
+
+    <!-- Ruffle Flash Emulator from CDN with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/@ruffle-rs/ruffle"></script>
+    
+    <script>
+        // Initialize Ruffle and load the SWF
+        window.addEventListener('RuffleAPIEvent', (e) => {
+            if (window.RufflePlayer) {
+                const ruffle = window.RufflePlayer.newest();
+                const player = ruffle.createPlayer();
+                const container = document.getElementById("game-container");
+                container.innerHTML = '';
+                container.appendChild(player);
+                player.load("Run3.swf");
+            }
+        });
+
+        // Fallback if API event doesn't fire
+        setTimeout(() => {
+            if (window.RufflePlayer) {
+                const ruffle = window.RufflePlayer.newest();
+                const player = ruffle.createPlayer();
+                const container = document.getElementById("game-container");
+                if (container.querySelector('object')) {
+                    container.innerHTML = '';
+                }
+                container.appendChild(player);
+                player.load("Run3.swf");
+            }
+        }, 1000);
+    </script>
 </body>
 </html>
