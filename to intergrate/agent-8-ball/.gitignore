@@ -1,6 +1,0 @@
-.DS_Store
-.bundle
-db/*.sqlite3
-log/*
-tmp/*
-public/stylesheets/compiled

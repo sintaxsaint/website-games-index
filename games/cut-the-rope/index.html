@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cut the Rope</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 600px;
+            height: 700px;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            border: 3px solid #333;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            z-index: 10;
+        }
+
+        .score-box, .level-box {
+            background: rgba(0,0,0,0.4);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 20;
+            display: none;
+        }
+
+        #gameOver h1 {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        #gameOver p {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        #gameOver button {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #gameOver button:hover {
+            background: #45a049;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 14px;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui">
+            <div class="level-box">Level: <span id="level">1</span></div>
+            <div class="score-box">Score: <span id="score">0</span></div>
+        </div>
+        <div id="gameOver">
+            <h1 id="gameOverTitle">Level Complete!</h1>
+            <p>Score: <span id="finalScore">0</span></p>
+            <button onclick="location.reload()">Play Again</button>
+        </div>
+        <div class="instructions">Click ropes to cut them and drop the candy into the jar!</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 600;
+        canvas.height = 700;
+
+        let score = 0;
+        let level = 1;
+        let gameRunning = true;
+
+        const candy = {
+            x: 300,
+            y: 150,
+            vx: 0,
+            vy: 0,
+            radius: 15,
+            mass: 1,
+            active: false
+        };
+
+        const jar = {
+            x: 300,
+            y: 600,
+            width: 80,
+            height: 60,
+            radius: 40
+        };
+
+        let ropes = [];
+        let particles = [];
+        let ropesCut = 0;
+
+        class Rope {
+            constructor(x1, y1, x2, y2) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.cut = false;
+                this.segments = 10;
+                this.points = [];
+                
+                for (let i = 0; i <= this.segments; i++) {
+                    const t = i / this.segments;
+                    this.points.push({
+                        x: x1 + (x2 - x1) * t,
+                        y: y1 + (y2 - y1) * t,
+                        vx: 0,
+                        vy: 0,
+                        pinned: i === 0
+                    });
+                }
+            }
+
+            update() {
+                const gravity = 0.5;
+                const damping = 0.99;
+
+                for (let i = 0; i < this.points.length; i++) {
+                    const p = this.points[i];
+                    if (!p.pinned) {
+                        p.vy += gravity;
+                        p.x += p.vx * damping;
+                        p.y += p.vy * damping;
+
+                        if (p.y > canvas.height) {
+                            p.y = canvas.height;
+                            p.vy = 0;
+                        }
+                    }
+                }
+
+                // Constraint solving
+                for (let iter = 0; iter < 5; iter++) {
+                    for (let i = 0; i < this.points.length - 1; i++) {
+                        const p1 = this.points[i];
+                        const p2 = this.points[i + 1];
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const dist = Math.hypot(dx, dy);
+                        const restDist = 20;
+                        const diff = (dist - restDist) / dist;
+
+                        if (!p1.pinned) {
+                            p1.x += dx * diff * 0.5;
+                            p1.y += dy * diff * 0.5;
+                        }
+                        if (!p2.pinned) {
+                            p2.x -= dx * diff * 0.5;
+                            p2.y -= dy * diff * 0.5;
+                        }
+                    }
+                }
+            }
+
+            draw() {
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+
+                for (let i = 1; i < this.points.length; i++) {
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+                ctx.stroke();
+            }
+
+            isNear(x, y, threshold = 20) {
+                for (let i = 0; i < this.points.length - 1; i++) {
+                    const p1 = this.points[i];
+                    const p2 = this.points[i + 1];
+                    const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                    
+                    let t = ((x - p1.x) * (p2.x - p1.x) + (y - p1.y) * (p2.y - p1.y)) / (dist * dist);
+                    t = Math.max(0, Math.min(1, t));
+                    
+                    const nearX = p1.x + t * (p2.x - p1.x);
+                    const nearY = p1.y + t * (p2.y - p1.y);
+                    
+                    if (Math.hypot(x - nearX, y - nearY) < threshold) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            cut(index) {
+                if (index >= 0 && index < this.points.length) {
+                    this.points[index].pinned = false;
+                    this.cut = true;
+                }
+            }
+        }
+
+        function initLevel() {
+            ropesCut = 0;
+            candy.active = true;
+            candy.vx = 0;
+            candy.vy = 0;
+            ropes = [];
+
+            // Create different rope configurations for different levels
+            const ropConfig = [
+                [[150, 50, 200, 150], [450, 50, 400, 150]],
+                [[150, 80, 200, 180], [450, 80, 400, 180], [300, 50, 300, 150]],
+                [[100, 60, 200, 150], [500, 60, 400, 150], [200, 120, 400, 120], [250, 80, 350, 80]]
+            ];
+
+            const config = ropConfig[Math.min(level - 1, 2)];
+            for (let rope of config) {
+                ropes.push(new Rope(...rope));
+            }
+        }
+
+        function updateCandy() {
+            if (!candy.active) return;
+
+            candy.vy += 0.3; // gravity
+            candy.x += candy.vx;
+            candy.y += candy.vy;
+
+            // Check collision with ropes
+            for (let rope of ropes) {
+                if (rope.cut) continue;
+                for (let i = 0; i < rope.points.length - 1; i++) {
+                    const p1 = rope.points[i];
+                    const p2 = rope.points[i + 1];
+                    
+                    const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                    let t = ((candy.x - p1.x) * (p2.x - p1.x) + (candy.y - p1.y) * (p2.y - p1.y)) / (dist * dist);
+                    t = Math.max(0, Math.min(1, t));
+                    
+                    const nearX = p1.x + t * (p2.x - p1.x);
+                    const nearY = p1.y + t * (p2.y - p1.y);
+                    
+                    const d = Math.hypot(candy.x - nearX, candy.y - nearY);
+                    if (d < candy.radius + 5) {
+                        const nx = (candy.x - nearX) / d;
+                        const ny = (candy.y - nearY) / d;
+                        candy.x = nearX + nx * (candy.radius + 5);
+                        candy.y = nearY + ny * (candy.radius + 5);
+                        
+                        const dotProduct = candy.vx * nx + candy.vy * ny;
+                        candy.vx = (candy.vx - dotProduct * nx) * 0.8;
+                        candy.vy = (candy.vy - dotProduct * ny) * 0.8;
+                    }
+                }
+            }
+
+            // Check if candy reached jar
+            if (candy.y > jar.y - 30) {
+                const dist = Math.hypot(candy.x - jar.x, candy.y - (jar.y - 20));
+                if (dist < jar.radius) {
+                    score += 1000;
+                    level++;
+                    if (level > 3) {
+                        gameOver(true);
+                    } else {
+                        initLevel();
+                    }
+                }
+            }
+
+            // Candy fell off screen
+            if (candy.y > canvas.height) {
+                gameOver(false);
+            }
+        }
+
+        function gameOver(won) {
+            gameRunning = false;
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('gameOverTitle').textContent = won ? 'You Won!' : 'Game Over!';
+            document.getElementById('finalScore').textContent = score;
+        }
+
+        function draw() {
+            // Background
+            ctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw jar
+            ctx.fillStyle = '#D4A574';
+            ctx.beginPath();
+            ctx.ellipse(jar.x, jar.y - 20, jar.radius, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#8B6914';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw jar sides
+            ctx.strokeStyle = '#D4A574';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(jar.x - 35, jar.y - 20);
+            ctx.lineTo(jar.x - 40, jar.y + 20);
+            ctx.moveTo(jar.x + 35, jar.y - 20);
+            ctx.lineTo(jar.x + 40, jar.y + 20);
+            ctx.stroke();
+
+            // Draw ropes
+            for (let rope of ropes) {
+                rope.draw();
+            }
+
+            // Draw candy
+            if (candy.active) {
+                ctx.fillStyle = '#FF6B9D';
+                ctx.beginPath();
+                ctx.arc(candy.x, candy.y, candy.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#C71585';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function gameLoop() {
+            // Update
+            for (let rope of ropes) {
+                rope.update();
+            }
+            updateCandy();
+
+            // Draw
+            draw();
+
+            if (gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Input handling
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            for (let rope of ropes) {
+                if (rope.cut) continue;
+                const index = rope.isNear(x, y, 30);
+                if (index >= 0) {
+                    rope.cut(index);
+                    rope.cut(Math.min(index + 1, rope.points.length - 1));
+                    score += 100;
+                    ropesCut++;
+                    break;
+                }
+            }
+
+            document.getElementById('score').textContent = score;
+        });
+
+        // Start game
+        initLevel();
+        document.getElementById('level').textContent = level;
+        gameLoop();
+    </script>
+</body>
+</html>
