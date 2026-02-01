@@ -2,28 +2,60 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML5 Pacman</title>
-    
+
     <style type="text/css">
       @font-face {
-	    font-family: 'BDCartoonShoutRegular';
+        font-family: 'BDCartoonShoutRegular';
         src: url('BD_Cartoon_Shout-webfont.ttf') format('truetype');
-	    font-weight: normal;
-	    font-style: normal;
+        font-weight: normal;
+        font-style: normal;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
       }
       #pacman {
-        height:450px;
-        width:342px;
-        margin:20px auto;
+        max-width: 100%;
+        max-height: calc(100% - 60px);
+        width: auto;
+        height: auto;
       }
-      #shim { 
-        font-family: BDCartoonShoutRegular; 
-        position:absolute;
-        visibility:hidden
+      #pacman canvas {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto !important;
+        height: auto !important;
       }
-      h1 { font-family: BDCartoonShoutRegular; text-align:center; }
-      body { width:342px; margin:0px auto; font-family:sans-serif; }
-      a { text-decoration:none; }
+      #shim {
+        font-family: BDCartoonShoutRegular;
+        position: absolute;
+        visibility: hidden;
+      }
+      h1 {
+        font-family: BDCartoonShoutRegular;
+        text-align: center;
+        color: #ff0;
+        font-size: 1.5rem;
+        padding: 10px;
+      }
+      a { text-decoration: none; color: #fff; }
+      .links { display: none; }
     </style>
 
 </head>
